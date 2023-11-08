@@ -53,7 +53,6 @@ class Intersection:
     streets: list[Street]
 
     def run(self):
-        """Runs the intersection"""
         while True:
             max_duration = 0
             for street in self.streets:
@@ -69,7 +68,6 @@ class Intersection:
 
 
 def setup_street(name: str, light: Light, duration: dict[Light, int]) -> Street:
-    """Sets up a street"""
     stoplight = Stoplight(light=light, duration=duration)
     controller = StoplightController(stoplights=[stoplight])
     return Street(name=name, controller=controller)
@@ -77,10 +75,17 @@ def setup_street(name: str, light: Light, duration: dict[Light, int]) -> Street:
 
 def main():
     duration = {Light.RED: 5, Light.YELLOW: 3, Light.GREEN: 5}
+    # Initial street configuration
     main_street = setup_street(name="Street 1", light=Light.RED, duration=duration)
     second_street = setup_street(name="Street 2", light=Light.RED, duration=duration)
     third_street = setup_street(name="Street 3", light=Light.GREEN, duration=duration)
     intersection = Intersection(streets=[main_street, second_street, third_street])
+    # When run is called, the intersection will run indefinitely
+    # The lights will change from red to green to yellow and back to red
+    # The lights will change in the order of the streets in the streets list
+    # The lights will change according to the duration dictionary
+    # Yellow is short, red and green are long
+    # The intersection will print a line of # to indicate a new cycle (Output to pins)
     intersection.run()
 
 
