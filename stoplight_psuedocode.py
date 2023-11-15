@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum, auto
 import time
+import keyboard
 
 
 class Light(Enum):
@@ -12,7 +13,6 @@ class Light(Enum):
 @dataclass(slots=True)
 class Stoplight:
     light: Light
-    duration: dict[Light, int]
 
     def switch(self):
         """Switches the light to the next color
@@ -49,37 +49,74 @@ class Street:
 
 
 @dataclass(slots=True)
+class CarSensor:
+    controller: StoplightController
+
+    def detect_car(self):
+        self.controller.run()
+
+
+@dataclass(slots=True)
+class CrosswalkButton:
+    controller: StoplightController
+
+    def press_button(self):
+        time.sleep(5)  # delay
+        self.controller.run()
+
+
+class StoplightController:
+    def __init__(self, stoplights):
+        self.stoplights = stoplights
+
+    def trigger_light_change(self):
+        for stoplight in self.stoplights:
+            stoplight
+
+
+@dataclass(slots=True)
 class Intersection:
     streets: list[Street]
+    car_sensor: CarSensor
+    crosswalk_button: CrosswalkButton
 
     def run(self):
-        while True:
-            max_duration = 0
-            for street in self.streets:
-                print(f"Changing lights for {street.name}")
-                street.controller.run()
-                current_duration = street.controller.stoplights[0].duration[
-                    street.controller.stoplights[0].light
-                ]
-                if current_duration > max_duration:
-                    max_duration = current_duration
-            time.sleep(max_duration)
-            print("#" * 20)
+        for street in self.streets:
+            print(f"Running {street.name}")
+            street.controller.run()
+        # Simulate car detection and button press
+        keyboard.add_hotkey("c", self.car_sensor.detect_car)
+        keyboard.add_hotkey("b", self.crosswalk_button.press_button)
+        keyboard.wait()
 
 
-def setup_street(name: str, light: Light, duration: dict[Light, int]) -> Street:
-    stoplight = Stoplight(light=light, duration=duration)
+def setup_street(name: str, light: Light) -> Street:
+    stoplight = Stoplight(light=light)
     controller = StoplightController(stoplights=[stoplight])
     return Street(name=name, controller=controller)
 
 
 def main():
-    duration = {Light.RED: 5, Light.YELLOW: 3, Light.GREEN: 5}
     # Initial street configuration
-    main_street = setup_street(name="Street 1", light=Light.GREEN, duration=duration)
-    second_street = setup_street(name="Street 2", light=Light.GREEN, duration=duration)
-    third_street = setup_street(name="Street 3", light=Light.RED, duration=duration)
-    intersection = Intersection(streets=[main_street, second_street, third_street])
+    main_street: Street = setup_street(
+        name="Street 1",
+        light=Light.GREEN,
+    )
+    side_street: Street = setup_street(
+        name="Street 2",
+        light=Light.RED,
+    )
+
+    crosswalk_button = CrosswalkButton(controller=main_street.controller)
+    car_sensor = CarSensor(controller=side_street.controller)
+    intersection = Intersection(
+        streets=[
+            main_street,
+            side_street,
+        ],
+        crosswalk_button=crosswalk_button,
+        car_sensor=car_sensor,
+    )
     intersection.run()
 
 
