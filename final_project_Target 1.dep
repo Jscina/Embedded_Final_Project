@@ -1,4 +1,4 @@
 Dependencies for Project 'final_project', Target 'Target 1': (DO NOT MODIFY !)
-F (.\startup_TM4C123.s)(0x654AB2D1)()
-F (C:\Keil\ARM\Startup\TI\TM4C123\system_TM4C123.c)(0x51C87494)()
-F (.\final_project.c)(0x6554D3BD)()
+F (.\startup_TM4C123.s)(0x654AB2D1)(--cpu Cortex-M4.fp --pd "__EVAL SETA 1" -g --apcs=interwork -I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\TI\TM4C123--list .\startup_tm4c123.lst --xref -o .\startup_tm4c123.o --depend .\startup_tm4c123.d)
+F (C:\Keil\ARM\Startup\TI\TM4C123\system_TM4C123.c)(0x51C87494)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork -I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\TI\TM4C123-DTM4C123GH6PM-o .\system_tm4c123.o --omf_browse .\system_tm4c123.crf --depend .\system_tm4c123.d)
+F (.\final_project.c)(0x6554D517)(-c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork -I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\TI\TM4C123-DTM4C123GH6PM-o .\final_project.o --omf_browse .\final_project.crf --depend .\final_project.d)
