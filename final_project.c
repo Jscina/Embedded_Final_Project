@@ -22,8 +22,8 @@
 // Port E
 #define GPIO_PORTE_AMSEL_R (*((volatile uint32_t *)0x40024528))
 #define GPIO_PORTE_AFSEL_R (*((volatile uint32_t *)0x40024420))
-#define GPIO_PORTE_DEN_R (*((volatile uint32_t *)0x4000451C))
-#define GPIO_PORTE_DIR_R (*((volatile uint32_t *) 0x40024420))
+#define GPIO_PORTE_DEN_R (*((volatile uint32_t *)0x4002451C))
+#define GPIO_PORTE_DIR_R (*((volatile uint32_t *) 0x40024400))
 #define GPIO_PORTE_PCTL_R (*((volatile uint32_t *) 0x4002552C))
 #define GPIO_PORTE_PUR_R (*((volatile uint32_t *) 0x40024510))
 #define GPIO_PORTE_DATA_R (*((volatile uint32_t *) 0x400243FC))
@@ -52,7 +52,7 @@
 #define PF0 (*((volatile uint32_t *)0x40025004)) // SW2
 
 // Distance Sensor
-#define PE4 (*((volatile uint32_t *)0x40024040) // Pin for sensor IN?
+#define PE4 (*((volatile uint32_t *)0x40024040)) // Pin for sensor IN?
 #define PE5 (*((volatile uint32_t *)0x40024050)) // Pin for sensor OUT?
 
 // Main Street Lights
@@ -155,13 +155,60 @@ void delay(uint32_t ms) {
 }
 
 
+void SetMainStreetLight(int red, int yellow, int green) {
+    MainSt_Red = red;
+    MainSt_Yellow = yellow;
+    MainSt_Green = green;
+}
+
+void SetSideStreetLight(int red, int yellow, int green) {
+    SideSt_Red = red;
+    SideSt_Yellow = yellow;
+    SideSt_Green = green;
+}
+
 int main(void){
-		SysTick_Init();
+    SysTick_Init();
     PortF_Init();
     PortA_Init();
-		PortE_Init();
+    PortE_Init();
 
-    while(1){       
-			// Main Logic Here
-    }
+    // Initial State: Main St Green, Side St Red
+    SetMainStreetLight(0, 0, 1);
+    SetSideStreetLight(1, 0, 0);
+
+    while(1){
+        // Check if the Main St crosswalk button is pressed or car is detected
+        if (MainSt_Crosswalk == 0 || PE4 == 1) {
+            // Change Main St to Yellow
+            SetMainStreetLight(0, 1, 0);
+            delay(2000); // Delay for Yellow
+
+            // Change Main St to Red and Side St to Green
+            SetMainStreetLight(1, 0, 0);
+            SetSideStreetLight(0, 0, 1);
+            delay(5000); // Delay for Red/Green
+
+            // Change Side St to Yellow before turning Red
+            SetSideStreetLight(0, 1, 0);
+            delay(2000); // Delay for Yellow
+
+            // Change back to initial state
+            SetMainStreetLight(0, 0, 1);
+            SetSideStreetLight(1, 0, 0);
+				}
+
+        // Check if the Side St crosswalk button is pressed
+        if (SideSt_Crosswalk == 0) {
+            // Ensure Side St goes through yellow before turning red
+            SetSideStreetLight(0, 1, 0);
+            delay(2000); // Delay for Yellow
+
+            // Revert to initial state
+            SetMainStreetLight(0, 0, 1);
+            SetSideStreetLight(1, 0, 0);
+        }
+
+			}
 }
+
