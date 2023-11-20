@@ -54,6 +54,8 @@
 // Distance Sensor
 #define PE4 (*((volatile uint32_t *)0x40024040)) // Pin for sensor IN?
 #define PE5 (*((volatile uint32_t *)0x40024050)) // Pin for sensor OUT?
+#define trigPin PE4
+#define echoPin PE5
 
 // Main Street Lights
 #define MainSt_Red PA2        // Red LED at PA2
@@ -68,8 +70,6 @@
 // Main St Crosswalk
 #define MainSt_Crosswalk PF4 // Switch at PF4
 
-// Side St Crosswalk
-#define SideSt_Crosswalk PF0 // Switch at PF0
 
 void SysTick_Init(void) {
 	NVIC_ST_CTRL_R = 0;
@@ -105,10 +105,11 @@ void PortF_Init(void){
 
 void PortA_Init(void) {
     volatile uint32_t delay;
+	
     SYSCTL_RCGCGPIO_R |= 0x01;      // 1) activate clock for Port A
     delay = SYSCTL_RCGCGPIO_R;       // 2) allow time for clock to start
 
-    GPIO_PORTA_AMSEL_R &= ~0xFC;     // 3) disable analog on PA2-PA7
+	  GPIO_PORTA_AMSEL_R &= ~0xFC;     // 3) disable analog on PA2-PA7
     GPIO_PORTA_PCTL_R &= ~0xFFFFFF00; // 4) configure PA2-PA7 as GPIO
     GPIO_PORTA_DIR_R |= 0xFC;        // 5) set PA2-PA7 to output
     GPIO_PORTA_AFSEL_R &= ~0xFC;      // 6) disable alt funct on PA2 - PA7
@@ -155,17 +156,6 @@ void delay(uint32_t ms) {
 }
 
 
-void SetMainStreetLight(int red, int yellow, int green) {
-    MainSt_Red = red;
-    MainSt_Yellow = yellow;
-    MainSt_Green = green;
-}
-
-void SetSideStreetLight(int red, int yellow, int green) {
-    SideSt_Red = red;
-    SideSt_Yellow = yellow;
-    SideSt_Green = green;
-}
 
 int main(void){
     SysTick_Init();
@@ -173,42 +163,66 @@ int main(void){
     PortA_Init();
     PortE_Init();
 
-    // Initial State: Main St Green, Side St Red
-    SetMainStreetLight(0, 0, 1);
-    SetSideStreetLight(1, 0, 0);
+// Initial State: Main St Green, Side St Red
+    
+MainSt_Red &= ~0x04;
+MainSt_Yellow &= ~0x08;
+MainSt_Green |= 0x10;
+
+SideSt_Red |= 0x20;
+SideSt_Yellow &= ~0x40;
+SideSt_Green &= ~0x80;
 
     while(1){
-        // Check if the Main St crosswalk button is pressed or car is detected
-        if (MainSt_Crosswalk == 0 || PE4 == 1) {
-            // Change Main St to Yellow
-            SetMainStreetLight(0, 1, 0);
-            delay(2000); // Delay for Yellow
-
-            // Change Main St to Red and Side St to Green
-            SetMainStreetLight(1, 0, 0);
-            SetSideStreetLight(0, 0, 1);
-            delay(5000); // Delay for Red/Green
-
-            // Change Side St to Yellow before turning Red
-            SetSideStreetLight(0, 1, 0);
-            delay(2000); // Delay for Yellow
-
-            // Change back to initial state
-            SetMainStreetLight(0, 0, 1);
-            SetSideStreetLight(1, 0, 0);
-				}
-
-        // Check if the Side St crosswalk button is pressed
-        if (SideSt_Crosswalk == 0) {
-            // Ensure Side St goes through yellow before turning red
-            SetSideStreetLight(0, 1, 0);
-            delay(2000); // Delay for Yellow
-
-            // Revert to initial state
-            SetMainStreetLight(0, 0, 1);
-            SetSideStreetLight(1, 0, 0);
-        }
-
-			}
+	// Check if the Main St crosswalk button is pressed or car is detected
+	trigPin &= ~0x10;
+	delay(2);
+	trigPin |= 0x10;
+	delay(10);
+	trigPin &= ~0x10;
+	delay(100);
+	if (!(MainSt_Crosswalk & 0x10) | !(echoPin & 0x40)) {
+	delay(2000);
+	// Change Main St to Yellow
+	MainSt_Red &= ~0x04;
+	MainSt_Yellow |= 0x08;
+	MainSt_Green &= ~0x10;
+	delay(2000); // Delay for Yellow
+	
+	// Change Main St to Red and Side St to Green
+	MainSt_Red |= 0x04;
+	MainSt_Yellow &= ~0x08;
+	MainSt_Green &= ~0x10;
+	
+	SideSt_Red &= ~0x20;
+	SideSt_Yellow &= ~0x40;
+	SideSt_Green |= 0x80;
+	delay(5000); // Delay for Red/Green
+	
+	// Change Side St to Yellow before turning Red
+	SideSt_Red &= ~0x20;
+	SideSt_Yellow |= 0x40;
+	SideSt_Green &= ~0x80;
+	delay(2000); // Delay for Yellow
+	
+	// Change back to initial state
+	MainSt_Red &= ~0x04;
+	MainSt_Yellow &= ~0x08;
+	MainSt_Green |= 0x10;
+	
+	SideSt_Red |= 0x20;
+	SideSt_Yellow &= ~0x40;
+	SideSt_Green &= ~0x80;
+	}
+	else {
+		MainSt_Red &= ~0x04;
+		MainSt_Yellow &= ~0x08;
+		MainSt_Green |= 0x10;
+		
+		SideSt_Red |= 0x20;
+		SideSt_Yellow &= ~0x40;
+		SideSt_Green &= ~0x80;
+	}
+	}		
 }
 
