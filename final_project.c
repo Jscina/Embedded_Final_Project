@@ -163,66 +163,66 @@ int main(void){
     PortA_Init();
     PortE_Init();
 
-// Initial State: Main St Green, Side St Red
+    // Initial State: Main St Green, Side St Red
     
-MainSt_Red &= ~0x04;
-MainSt_Yellow &= ~0x08;
-MainSt_Green |= 0x10;
-
-SideSt_Red |= 0x20;
-SideSt_Yellow &= ~0x40;
-SideSt_Green &= ~0x80;
-
-    while(1){
-	// Check if the Main St crosswalk button is pressed or car is detected
-	trigPin &= ~0x10;
-	delay(2);
-	trigPin |= 0x10;
-	delay(10);
-	trigPin &= ~0x10;
-	delay(100);
-	if (!(MainSt_Crosswalk & 0x10) | !(echoPin & 0x40)) {
-	delay(2000);
-	// Change Main St to Yellow
-	MainSt_Red &= ~0x04;
-	MainSt_Yellow |= 0x08;
-	MainSt_Green &= ~0x10;
-	delay(2000); // Delay for Yellow
-	
-	// Change Main St to Red and Side St to Green
-	MainSt_Red |= 0x04;
-	MainSt_Yellow &= ~0x08;
-	MainSt_Green &= ~0x10;
-	
-	SideSt_Red &= ~0x20;
-	SideSt_Yellow &= ~0x40;
-	SideSt_Green |= 0x80;
-	delay(5000); // Delay for Red/Green
-	
-	// Change Side St to Yellow before turning Red
-	SideSt_Red &= ~0x20;
-	SideSt_Yellow |= 0x40;
-	SideSt_Green &= ~0x80;
-	delay(2000); // Delay for Yellow
-	
-	// Change back to initial state
-	MainSt_Red &= ~0x04;
-	MainSt_Yellow &= ~0x08;
-	MainSt_Green |= 0x10;
-	
-	SideSt_Red |= 0x20;
-	SideSt_Yellow &= ~0x40;
-	SideSt_Green &= ~0x80;
-	}
-	else {
 		MainSt_Red &= ~0x04;
 		MainSt_Yellow &= ~0x08;
 		MainSt_Green |= 0x10;
-		
+    
 		SideSt_Red |= 0x20;
 		SideSt_Yellow &= ~0x40;
 		SideSt_Green &= ~0x80;
-	}
-	}		
+
+    while(1){
+			// Check if the Main St crosswalk button is pressed or car is detected
+			trigPin &= ~0x10;
+			delay(2);
+			trigPin |= 0x10;
+			delay(10);
+			trigPin &= ~0x10;
+			delay(100);
+			if (!(MainSt_Crosswalk & 0x10) == 1 | !(echoPin & 0x40) == 0) {
+					delay(2000);
+					// Change Main St to Yellow
+				  MainSt_Red &= ~0x04;
+					MainSt_Yellow |= 0x08;
+					MainSt_Green &= ~0x10;
+					delay(2000); // Delay for Yellow
+
+					// Change Main St to Red and Side St to Green
+					MainSt_Red |= 0x04;
+					MainSt_Yellow &= ~0x08;
+					MainSt_Green &= ~0x10;
+				
+					SideSt_Red &= ~0x20;
+					SideSt_Yellow &= ~0x40;
+					SideSt_Green |= 0x80;
+					delay(5000); // Delay for Red/Green
+
+					// Change Side St to Yellow before turning Red
+					SideSt_Red &= ~0x20;
+					SideSt_Yellow |= 0x40;
+					SideSt_Green &= ~0x80;
+					delay(2000); // Delay for Yellow
+
+					// Change back to initial state
+					MainSt_Red &= ~0x04;
+					MainSt_Yellow &= ~0x08;
+					MainSt_Green |= 0x10;
+					
+					SideSt_Red |= 0x20;
+					SideSt_Yellow &= ~0x40;
+					SideSt_Green &= ~0x80;
+			}
+			else {
+					MainSt_Red &= ~0x04;
+					MainSt_Yellow &= ~0x08;
+					MainSt_Green |= 0x10;
+					
+					SideSt_Red |= 0x20;
+					SideSt_Yellow &= ~0x40;
+					SideSt_Green &= ~0x80;
+			}
+		}		
 }
 
