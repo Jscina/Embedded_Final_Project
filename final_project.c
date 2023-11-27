@@ -51,8 +51,8 @@
 #define PF4 (*((volatile uint32_t *)0x40025040)) // SW1
 
 // Distance Sensor
-#define PE4 (*((volatile uint32_t *)0x40024040)) // Pin for sensor IN?
-#define PE5 (*((volatile uint32_t *)0x40024050)) // Pin for sensor OUT?
+#define PE4 (*((volatile uint32_t *)0x40024040)) // Pin for sensor IN
+#define PE5 (*((volatile uint32_t *)0x40024050)) // Pin for sensor OUT
 #define trigPin PE4
 #define echoPin PE5
 
@@ -171,7 +171,7 @@ int main(void){
 		SideSt_Yellow &= ~0x40;
 		SideSt_Green &= ~0x80;
 
-    while(1) {
+    while(1){
 			// Check if the Main St crosswalk button is pressed or car is detected
 			trigPin &= ~0x10;
 			delay(2);
@@ -214,6 +214,6 @@ int main(void){
 					SideSt_Green &= ~0x80;
 					delay(70);
 			}
-		}			
+		}		
 }
 
