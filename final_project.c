@@ -49,7 +49,6 @@
 
 // Input Crosswalk
 #define PF4 (*((volatile uint32_t *)0x40025040)) // SW1
-#define PF0 (*((volatile uint32_t *)0x40025004)) // SW2
 
 // Distance Sensor
 #define PE4 (*((volatile uint32_t *)0x40024040)) // Pin for sensor IN?
@@ -88,18 +87,17 @@ void PortF_Init(void){
     GPIO_PORTF_LOCK_R = 0x4C4F434B; // 3) unlock GPIO Port F
     GPIO_PORTF_CR_R = 0x1F;         // allow changes to port F registers
 
-    GPIO_PORTF_AMSEL_R &= ~0x11;     // 4) clear bits 2, 3 in GPIO_PORTF_AMSEL_R to disable analog on PF0, PF4
+    GPIO_PORTF_AMSEL_R &= ~0x10;     // 4) clear bits 2, 3 in GPIO_PORTF_AMSEL_R to disable analog on PF0, PF4
 
-    GPIO_PORTF_PCTL_R &= ~0xF000F;   // 5) clear bits 0-3, 16-19 in GPIO_PORTF_PCTL_R for GPIO on PF0, PF4
+    GPIO_PORTF_PCTL_R &= ~0xF0000;   // 5) clear bits 16-19 in GPIO_PORTF_PCTL_R for GPIO on PF4
 
     GPIO_PORTF_DIR_R &= ~0x10;       // 6) Clear bit 4 in GPIO_PORTF_DIR_R to make PF4 an IN (switch)
-		GPIO_PORTF_DIR_R &= ~0x1;        // 6) Clear bit 0 inn GPIO_PORTF_DIR_R to make PF0 an IN (switch)
 
-    GPIO_PORTF_AFSEL_R &= ~0x11;      // 7) clear bits 0 and 4 in GPIO_PORTF_AFSEL_R to disable alt funct on PF0, PF4
+    GPIO_PORTF_AFSEL_R &= ~0x10;      // 7) clear bits 0 and 4 in GPIO_PORTF_AFSEL_R to disable alt funct on PF0, PF4
 
-    GPIO_PORTF_PUR_R |= 0x11;        // 8) Set bit 0-4 in GPIO_PORTF_PUR_R to enable pull-up on PF4, PF0 (switch)
+    GPIO_PORTF_PUR_R |= 0x10;        // 8) Set bit 0-4 in GPIO_PORTF_PUR_R to enable pull-up on PF4, PF0 (switch)
 
-    GPIO_PORTF_DEN_R |= 0x11;        // 9) Set the bits 0-4 in GPIO_PORTF_DEN_R to enable digital I/O on PF0, PF4
+    GPIO_PORTF_DEN_R |= 0x10;        // 9) Set the bits 0-4 in GPIO_PORTF_DEN_R to enable digital I/O on PF0, PF4
 }
 
 
@@ -205,14 +203,6 @@ int main(void){
 					SideSt_Green &= ~0x80;
 					delay(2000); // Delay for Yellow
 
-					// Change back to initial state
-					MainSt_Red &= ~0x04;
-					MainSt_Yellow &= ~0x08;
-					MainSt_Green |= 0x10;
-					
-					SideSt_Red |= 0x20;
-					SideSt_Yellow &= ~0x40;
-					SideSt_Green &= ~0x80;
 			}
 			else {
 					MainSt_Red &= ~0x04;
@@ -222,6 +212,7 @@ int main(void){
 					SideSt_Red |= 0x20;
 					SideSt_Yellow &= ~0x40;
 					SideSt_Green &= ~0x80;
+					delay(5000); // Wait a while before allowing lights to change again
 			}
 		}		
 }
