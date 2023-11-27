@@ -1,123 +1,108 @@
-from dataclasses import dataclass
-from enum import Enum, auto
 import time
 import keyboard
 
 
-class Light(Enum):
-    RED = auto()
-    YELLOW = auto()
-    GREEN = auto()
+class LED:
+    def __init__(self, color, street):
+        self.color = color
+        self.state = False
+        self.street = street
+
+    def turn_on(self):
+        self.state = True
+
+    def turn_off(self):
+        self.state = False
+
+    def __str__(self):
+        return f"{self.street} St {self.color} light is {'on' if self.state else 'off'}"
 
 
-@dataclass(slots=True)
-class Stoplight:
-    light: Light
+class Button:
+    def __init__(self):
+        self.state = False
 
-    def switch(self):
-        """Switches the light to the next color
+    def press(self):
+        self.state = True
 
-        Returns:
-            Light: The new light color
-        """
-        if self.light == Light.RED:
-            self.light = Light.GREEN
-        elif self.light == Light.GREEN:
-            self.light = Light.YELLOW
-        else:
-            self.light = Light.RED
-        print(f"Light switched to {self.light.name}")
-        return self.light
+    def release(self):
+        self.state = False
 
 
-@dataclass(slots=True)
-class StoplightController:
-    stoplights: list[Stoplight]
-    current: int = 0
+class Sensor:
+    def __init__(self):
+        self.state = False
 
-    def run(self):
-        """Runs the stoplight controller"""
-        new_light = self.stoplights[self.current].switch()
-        if new_light == Light.RED:
-            self.current = (self.current + 1) % len(self.stoplights)
+    def detect(self):
+        self.state = True
 
-
-@dataclass(slots=True)
-class Street:
-    name: str
-    controller: StoplightController
+    def clear(self):
+        self.state = False
 
 
-@dataclass(slots=True)
-class CarSensor:
-    controller: StoplightController
+class TrafficController:
+    def __init__(self):
+        # Initialize LEDs
+        self.main_st_red = LED("red", "Main")
+        self.main_st_yellow = LED("yellow", "Main")
+        self.main_st_green = LED("green", "Main")
+        self.side_st_red = LED("red", "Side")
+        self.side_st_yellow = LED("yellow", "Side")
+        self.side_st_green = LED("green", "Side")
 
-    def detect_car(self):
-        self.controller.run()
+        # Initialize button and sensor
+        self.crosswalk_button = Button()
+        self.car_sensor = Sensor()
 
+    def toggle_crosswalk(self, e=None):
+        self.crosswalk_button.press()
+        time.sleep(0.5)
+        self.crosswalk_button.release()
 
-@dataclass(slots=True)
-class CrosswalkButton:
-    controller: StoplightController
-
-    def press_button(self):
-        time.sleep(5)  # delay
-        self.controller.run()
-
-
-class StoplightController:
-    def __init__(self, stoplights):
-        self.stoplights = stoplights
-
-    def trigger_light_change(self):
-        for stoplight in self.stoplights:
-            stoplight
-
-
-@dataclass(slots=True)
-class Intersection:
-    streets: list[Street]
-    car_sensor: CarSensor
-    crosswalk_button: CrosswalkButton
+    def detect_car(self, e=None):
+        self.car_sensor.detect()
+        time.sleep(0.5)
+        self.car_sensor.clear()
 
     def run(self):
-        for street in self.streets:
-            print(f"Running {street.name}")
-            street.controller.run()
-        # Simulate car detection and button press
-        keyboard.add_hotkey("c", self.car_sensor.detect_car)
-        keyboard.add_hotkey("b", self.crosswalk_button.press_button)
-        keyboard.wait()
+        keyboard.on_press_key("c", self.toggle_crosswalk)
+        keyboard.on_press_key("s", self.detect_car)
+        while True:
+            if self.crosswalk_button.state or self.car_sensor.state:
+                # Change Main St to Yellow
+                self.main_st_green.turn_off()
+                self.main_st_yellow.turn_on()
+                print(self.main_st_yellow, end="\n" + "-" * 20 + "\n\n")
+                time.sleep(2)  # Delay for Yellow
 
+                # Change Main St to Red and Side St to Green
+                self.main_st_yellow.turn_off()
+                self.main_st_red.turn_on()
+                print(self.main_st_red)
+                self.side_st_red.turn_off()
+                self.side_st_green.turn_on()
+                print(self.side_st_green, end="\n" + "-" * 20 + "\n\n")
+                time.sleep(5)  # Delay for Red/Green
 
-def setup_street(name: str, light: Light) -> Street:
-    stoplight = Stoplight(light=light)
-    controller = StoplightController(stoplights=[stoplight])
-    return Street(name=name, controller=controller)
+                # Change Side St to Yellow before turning Red
+                self.side_st_green.turn_off()
+                self.side_st_yellow.turn_on()
+                print(self.side_st_yellow, end="\n" + "-" * 20 + "\n\n")
+                time.sleep(2)  # Delay for Yellow
+
+            else:
+                self.main_st_red.turn_off()
+                self.main_st_green.turn_on()
+                print(self.main_st_green)
+                self.side_st_yellow.turn_off()
+                self.side_st_red.turn_on()
+                print(self.side_st_red, end="\n" + "-" * 20 + "\n\n")
+                time.sleep(5)  # Wait a while before allowing lights to change again
 
 
 def main():
-    # Initial street configuration
-    main_street: Street = setup_street(
-        name="Street 1",
-        light=Light.GREEN,
-    )
-    side_street: Street = setup_street(
-        name="Street 2",
-        light=Light.RED,
-    )
-
-    crosswalk_button = CrosswalkButton(controller=main_street.controller)
-    car_sensor = CarSensor(controller=side_street.controller)
-    intersection = Intersection(
-        streets=[
-            main_street,
-            side_street,
-        ],
-        crosswalk_button=crosswalk_button,
-        car_sensor=car_sensor,
-    )
-    intersection.run()
+    controller = TrafficController()
+    controller.run()
 
 
 if __name__ == "__main__":
