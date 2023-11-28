@@ -97,7 +97,7 @@ class TrafficController:
                 self.side_st_yellow.turn_off()
                 self.side_st_red.turn_on()
                 print(self.side_st_red, end="\n" + "-" * 20 + "\n\n")
-                time.sleep(5)  # Wait a while before allowing lights to change again
+                time.sleep(0.1)
 
 
 def main():
