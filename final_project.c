@@ -51,8 +51,8 @@
 #define PF4 (*((volatile uint32_t *)0x40025040)) // SW1
 
 // Distance Sensor
-#define PE4 (*((volatile uint32_t *)0x40024040)) // Pin for sensor IN?
-#define PE5 (*((volatile uint32_t *)0x40024050)) // Pin for sensor OUT?
+#define PE4 (*((volatile uint32_t *)0x40024040)) // Pin for sensor IN
+#define PE5 (*((volatile uint32_t *)0x40024050)) // Pin for sensor OUT
 #define trigPin PE4
 #define echoPin PE5
 
@@ -180,7 +180,7 @@ int main(void){
 			trigPin &= ~0x10;
 			delay(100);
 			if (!(MainSt_Crosswalk & 0x10) == 1 | !(echoPin & 0x40) == 0) {
-					delay(2000);
+					delay(100);
 					// Change Main St to Yellow
 				  MainSt_Red &= ~0x04;
 					MainSt_Yellow |= 0x08;
@@ -212,7 +212,7 @@ int main(void){
 					SideSt_Red |= 0x20;
 					SideSt_Yellow &= ~0x40;
 					SideSt_Green &= ~0x80;
-					delay(5000); // Wait a while before allowing lights to change again
+					delay(70);
 			}
 		}		
 }
